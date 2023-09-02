@@ -44,7 +44,7 @@ class MySwitch(SwitchEntity):
 
     async def async_turn_on(self, **kwargs):
         try:
-            await self._hass.async_add_executor_job(lambda: requests.post(self._endpoint_post, json={"should_charge": "true"}))
+            await self._hass.async_add_executor_job(lambda: requests.post(self._endpoint_post, params={"should_charge": "true"}))
             self._is_on = True
             self.async_write_ha_state()
         except Exception as e:
@@ -52,7 +52,7 @@ class MySwitch(SwitchEntity):
 
     async def async_turn_off(self, **kwargs):
         try:
-            await self._hass.async_add_executor_job(lambda: requests.post(self._endpoint_post, json={"should_charge": "false"}))
+            await self._hass.async_add_executor_job(lambda: requests.post(self._endpoint_post, params={"should_charge": "false"}))
             self._is_on = False
             self.async_write_ha_state()
         except Exception as e:

@@ -14,23 +14,21 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     endpoint_post = f"http://{ip_address}/charge_tonight"
 
     try:
-        data = await hass.async_add_executor_job(lambda: requests.get(endpoint_get).json())
+        data = await hass.async_add_executor_job(lambda: requests.get(endpoint_get).json()["charge_tonight"])
         _LOGGER.warning(f"Retrieved data: {data}")
     except Exception as e:
         _LOGGER.error(f"Could not retrieve data: {e}")
         return
 
     switches = []
-    for key, value in data.items():
-        switches.append(MySwitch(key, value, hass, endpoint_get, endpoint_post))
+    switches.append(MySwitch("charge_tonight", hass, endpoint_get, endpoint_post))
 
     _LOGGER.warning(f"Adding {len(switches)} switches.")
     async_add_entities(switches, True)
 
 class MySwitch(SwitchEntity):
-    def __init__(self, name, state, hass, endpoint_get, endpoint_post):
+    def __init__(self, name, hass, endpoint_get, endpoint_post):
         self._name = name
-        self._is_on = state
         self._hass = hass
         self._endpoint_get = endpoint_get
         self._endpoint_post = endpoint_post

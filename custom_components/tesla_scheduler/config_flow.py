@@ -1,6 +1,8 @@
 import voluptuous as vol
 from homeassistant import config_entries
 
+DOMAIN = "tesla_scheduler"
+
 class MyCustomComponentConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
 

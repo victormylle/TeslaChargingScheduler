@@ -1,6 +1,7 @@
 {
   "domain": "tesla_scheduler",
   "name": "Tesla Charging Scheduler",
+  "config_flow": true,
   "documentation": "",
   "dependencies": [],
   "codeowners": ["@victormylle"],

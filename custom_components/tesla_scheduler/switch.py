@@ -27,7 +27,7 @@ class MySwitch(SwitchEntity):
         self._endpoint_post = endpoint_post
       
         self._is_on = False
-        
+
         async_track_time_interval(self._hass, self.async_update, datetime.timedelta(minutes=1))
 
     @property
@@ -44,7 +44,7 @@ class MySwitch(SwitchEntity):
 
     async def async_turn_on(self, **kwargs):
         try:
-            await self._hass.async_add_executor_job(lambda: requests.post(self._endpoint_post, json={"state": "on"}))
+            await self._hass.async_add_executor_job(lambda: requests.post(self._endpoint_post, json={"should_charge": "true"}))
             self._is_on = True
             self.async_write_ha_state()
         except Exception as e:
@@ -52,7 +52,7 @@ class MySwitch(SwitchEntity):
 
     async def async_turn_off(self, **kwargs):
         try:
-            await self._hass.async_add_executor_job(lambda: requests.post(self._endpoint_post, json={"state": "off"}))
+            await self._hass.async_add_executor_job(lambda: requests.post(self._endpoint_post, json={"should_charge": "false"}))
             self._is_on = False
             self.async_write_ha_state()
         except Exception as e:

@@ -10,7 +10,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     _LOGGER.warning("Setting up sensors...")
 
     ip_address = config_entry.data["ip_address"]
-    endpoint = f"http://{ip_address}/your_endpoint"
+    endpoint = f"http://{ip_address}/scheduled"
 
     try:
         data = await hass.async_add_executor_job(lambda: requests.get(endpoint).json())
@@ -38,7 +38,7 @@ class MySensor(Entity):
 
     @property
     def name(self):
-        return self._name
+        return f"tesla_scheduler_{self._name}"
 
     @property
     def state(self):

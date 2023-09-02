@@ -1,40 +1,40 @@
-import aiohttp
-from datetime import timedelta
-from homeassistant.helpers.event import async_track_time_interval
+import requests
 from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.event import async_track_time_interval
+import logging
+import datetime
+
+_LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
+    _LOGGER.warning("Setting up sensors...")
+
     ip_address = config_entry.data["ip_address"]
     endpoint = f"http://{ip_address}/your_endpoint"
 
-    # Initialize entities list
-    entities = []
+    try:
+        data = await hass.async_add_executor_job(lambda: requests.get(endpoint).json())
+        _LOGGER.warning(f"Retrieved data: {data}")
+    except Exception as e:
+        _LOGGER.error(f"Could not retrieve data: {e}")
+        return
 
-    async def fetch_data():
-        async with aiohttp.ClientSession() as session:
-            async with session.get(endpoint) as response:
-                data = await response.json()
-        # Your logic to update entities
-        for entity in entities:
-            entity.update_data(data[entity.name])
-            
-    # Register the fetch data method to be called every 15 seconds
-    async_track_time_interval(hass, fetch_data, timedelta(seconds=15))
+    sensors = []
+    for key, value in data.items():
+        sensors.append(MySensor(key, value, hass, endpoint))
 
-    # Create initial entities based on first data fetch
-    await fetch_data()
-
-    # Actually add the entities
-    async_add_entities(entities, True)
+    _LOGGER.warning(f"Adding {len(sensors)} sensors.")
+    async_add_entities(sensors, True)
 
 class MySensor(Entity):
-    def __init__(self, name):
+    def __init__(self, name, state, hass, endpoint):
         self._name = name
-        self._state = None
+        self._state = state
+        self._hass = hass
+        self._endpoint = endpoint
 
-    def update_data(self, new_state):
-        self._state = new_state
-        self.async_schedule_update_ha_state()
+        # Update every minute
+        async_track_time_interval(self._hass, self.async_update, datetime.timedelta(minutes=1))
 
     @property
     def name(self):
@@ -43,3 +43,15 @@ class MySensor(Entity):
     @property
     def state(self):
         return self._state
+    
+    @property
+    def unique_id(self):
+        return f"tesla_scheduler_{self._name}"
+
+
+    async def async_update(self, *args):
+        try:
+            self._state = await self._hass.async_add_executor_job(lambda: requests.get(self._endpoint).json()[self._name])
+            _LOGGER.warning(f"Updated sensor {self._name} to {self._state}")
+        except Exception as e:
+            _LOGGER.error(f"Could not update sensor {self._name}: {e}")

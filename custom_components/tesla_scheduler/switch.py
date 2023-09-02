@@ -13,13 +13,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     endpoint_get = f"http://{ip_address}/scheduled"
     endpoint_post = f"http://{ip_address}/charge_tonight"
 
-    try:
-        data = await hass.async_add_executor_job(lambda: requests.get(endpoint_get).json()["charge_tonight"])
-        _LOGGER.warning(f"Retrieved data: {data}")
-    except Exception as e:
-        _LOGGER.error(f"Could not retrieve data: {e}")
-        return
-
     switches = []
     switches.append(MySwitch("charge_tonight", hass, endpoint_get, endpoint_post))
 

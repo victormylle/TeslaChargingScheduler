@@ -35,17 +35,26 @@ async def async_setup_entry(hass: HomeAssistantType, config_entry: ConfigType, a
 
     await coordinator.async_config_entry_first_refresh()
 
-    async_add_entities([MySwitch(coordinator, endpoint_post)], True)
+    async_add_entities([MySwitch("charge_tonight", coordinator, endpoint_post)], True)
 
 class MySwitch(CoordinatorEntity, SwitchEntity):
-    def __init__(self, coordinator: DataUpdateCoordinator, endpoint_post: str):
+    def __init__(self, _name: str, coordinator: DataUpdateCoordinator, endpoint_post: str):
         super().__init__(coordinator)
         self._is_on = False
         self._endpoint_post = endpoint_post
+        self._name = _name
 
     @property
     def is_on(self):
         return self._is_on
+    
+    @property
+    def name(self):
+        return f"tesla_scheduler_{self._name}"
+    
+    @property
+    def unique_id(self):
+        return f"tesla_scheduler_{self._name}"
 
     async def async_turn_on(self, **kwargs):
         try:

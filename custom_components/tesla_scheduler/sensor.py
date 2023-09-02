@@ -1,34 +1,40 @@
-import requests
+import aiohttp
+from datetime import timedelta
+from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.entity import Entity
-import logging
-
-_LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
-    _LOGGER.warning("Setting up sensors...")
-
     ip_address = config_entry.data["ip_address"]
     endpoint = f"http://{ip_address}/your_endpoint"
 
-    try:
-        data = await hass.async_add_executor_job(lambda: requests.get(endpoint).json())
-        _LOGGER.warning(f"Retrieved data: {data}")
-    except Exception as e:
-        _LOGGER.error(f"Could not retrieve data: {e}")
-        return
+    # Initialize entities list
+    entities = []
 
-    sensors = []
-    for key, value in data.items():
-        sensors.append(MySensor(key, value))
+    async def fetch_data():
+        async with aiohttp.ClientSession() as session:
+            async with session.get(endpoint) as response:
+                data = await response.json()
+        # Your logic to update entities
+        for entity in entities:
+            entity.update_data(data[entity.name])
+            
+    # Register the fetch data method to be called every 15 seconds
+    async_track_time_interval(hass, fetch_data, timedelta(seconds=15))
 
-    _LOGGER.warning(f"Adding {len(sensors)} sensors.")
-    async_add_entities(sensors, True)
+    # Create initial entities based on first data fetch
+    await fetch_data()
 
+    # Actually add the entities
+    async_add_entities(entities, True)
 
 class MySensor(Entity):
-    def __init__(self, name, state):
+    def __init__(self, name):
         self._name = name
-        self._state = state
+        self._state = None
+
+    def update_data(self, new_state):
+        self._state = new_state
+        self.async_schedule_update_ha_state()
 
     @property
     def name(self):

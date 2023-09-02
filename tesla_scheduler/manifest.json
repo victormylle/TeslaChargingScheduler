@@ -1,0 +1,8 @@
+{
+  "domain": "tesla_scheduler",
+  "name": "Tesla Charging Scheduler",
+  "documentation": "",
+  "dependencies": [],
+  "codeowners": ["@victormylle"],
+  "version": "1.0.0"
+}

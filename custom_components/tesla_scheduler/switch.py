@@ -25,7 +25,9 @@ class MySwitch(SwitchEntity):
         self._hass = hass
         self._endpoint_get = endpoint_get
         self._endpoint_post = endpoint_post
-
+      
+        self._is_on = False
+        
         async_track_time_interval(self._hass, self.async_update, datetime.timedelta(minutes=1))
 
     @property

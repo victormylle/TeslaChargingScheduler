@@ -88,7 +88,8 @@ class ChargingCostSensor(Entity):
     async def async_update(self, *args):
         try:
             start_date, end_date = self._get_date_range()
-            endpoint = f"{self._base_endpoint}?start_date={start_date}&end_date={end_date}"
+            # Ensure dates are formatted as 'YYYY-MM-DD' when passed to the endpoint
+            endpoint = f"{self._base_endpoint}?start_date={start_date.isoformat()}&end_date={end_date.isoformat()}"
             response = await self._hass.async_add_executor_job(lambda: requests.get(endpoint).json())
             self._state = response.get("total_cost", 0.0)
             _LOGGER.warning(f"Updated sensor {self._name} to {self._state}")
@@ -99,10 +100,10 @@ class ChargingCostSensor(Entity):
         today = datetime.date.today()
         if self._period == "today":
             return today, today
-        elif self._period == "yesterday"":
+        elif self._period == "yesterday":
             yesterday = today - datetime.timedelta(days=1)
             return yesterday, yesterday
-        elif self._period == "month"":
+        elif self._period == "month":
             start_date = today.replace(day=1)
             end_date = today
             return start_date, end_date

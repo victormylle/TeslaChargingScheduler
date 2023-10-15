@@ -68,7 +68,7 @@ class ChargingCostSensor(Entity):
         self._state = 0.0  # Default state
         self._hass = hass
         self._period = period
-        self._endpoint = f"http://{ip_address}/charging_cost?date={period}"
+        self._base_endpoint = f"http://{ip_address}/charging_cost"
 
         # Update every minute
         async_track_time_interval(self._hass, self.async_update, datetime.timedelta(minutes=1))

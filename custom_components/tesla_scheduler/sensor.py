@@ -89,7 +89,7 @@ class ChargingCostSensor(Entity):
         try:
             start_date, end_date = self._get_date_range()
             # Ensure dates are formatted as 'YYYY-MM-DD' when passed to the endpoint
-            endpoint = f"{self._base_endpoint}?start_date={start_date.isoformat()}&end_date={end_date.isoformat()}"
+            endpoint = f"{self._base_endpoint}?start_date={start_date.strftime('%Y-%m-%d')}&end_date={end_date.strftime('%Y-%m-%d')}"
             response = await self._hass.async_add_executor_job(lambda: requests.get(endpoint).json())
             self._state = response.get("total_cost", 0.0)
             _LOGGER.warning(f"Updated sensor {self._name} to {self._state}")
